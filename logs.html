@@ -1,135 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Logs</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-            background: #f5f7fa;
-        }
+  <meta charset="UTF-8">
+  <title>Logs — Patient Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f1ec; --surface: #ffffff; --primary: #1a3a2a; --accent: #4a7c59;
+      --accent2: #c8a96e; --text: #1c1c1c; --muted: #7a7a7a; --border: #e0dbd2;
+      --danger: #c0392b; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
 
-        nav a {
-            margin-right: 16px;
-            text-decoration: none;
-            color: #3498db;
-            font-weight: bold;
-        }
+    .topbar {
+      background: var(--primary); color: white; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 32px; height: 56px; position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-brand { font-family: 'DM Serif Display', serif; font-size: 1.2rem; }
+    .topbar-nav { display: flex; gap: 4px; }
+    .topbar-nav a { color: rgba(255,255,255,0.75); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .topbar-nav a:hover, .topbar-nav a.active { background: rgba(255,255,255,0.15); color: white; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+    .user-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 12px 4px 8px; font-size: 0.82rem; }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #6ee7a0; }
+    .user-select { background: transparent; border: none; color: white; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; outline: none; }
+    .user-select option { color: #1c1c1c; background: white; }
 
-        h1,
-        h2 {
-            color: #2c3e50;
-        }
+    .page { max-width: 1300px; margin: 0 auto; padding: 36px 24px; }
+    .page-title { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--primary); margin-bottom: 4px; }
+    .page-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
+    .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .btn {
+      padding: 9px 20px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { opacity: 0.85; }
+    .btn-sm { padding: 4px 10px; font-size: 0.76rem; }
+    .btn-disabled { background: #ccc; color: #888; cursor: not-allowed; }
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85em;
-        }
+    .card { background: var(--surface); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .card-title { font-size: 1rem; font-weight: 600; color: var(--primary); margin-bottom: 16px; }
 
-        th {
-            background: #2c3e50;
-            color: white;
-            padding: 8px;
-            text-align: left;
-        }
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); }
+    thead th { background: var(--primary); color: white; padding: 10px 12px; text-align: left; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; }
+    tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.82rem; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #f9f7f3; }
+    tbody tr.undone-row td { opacity: 0.5; text-decoration: line-through; }
+    tbody tr.undone-row:hover td { background: #fef9f9; }
 
-        td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #ecf0f1;
-            word-break: break-all;
-        }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.73rem; font-weight: 600; }
+    .badge-undone { background: #fce4ec; color: #c62828; }
+    .badge-done { background: #e8f5e9; color: #2e7d32; }
+    .badge-created { background: #e3f2fd; color: #1565c0; }
+    .badge-rejected { background: #fff3e0; color: #e65100; }
 
-        .btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-    </style>
+    .payload-cell { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.76rem; color: var(--muted); font-family: monospace; cursor: pointer; }
+    .payload-cell:hover { white-space: normal; word-break: break-all; color: var(--text); }
+
+    .empty-row td { text-align: center; color: var(--muted); padding: 32px; font-style: italic; }
+
+    .notice {
+      background: #fffbef; border: 1px solid var(--accent2); border-radius: 8px;
+      padding: 10px 16px; font-size: 0.84rem; color: #7d5a00; margin-bottom: 16px; display: none;
+    }
+  </style>
 </head>
-
 <body>
-    <nav>
-        <a href="index.html">🏥 Patients</a>
-        <a href="catalogue.html">📚 Catalogue</a>
-        <a href="logs.html">📋 Logs</a>
-    </nav>
-    <h1>Logs</h1>
-    <button class="btn" onclick="loadAll()">🔄 Refresh</button>
-    <div class="grid">
-        <div class="card">
-            <h2>Command Log</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>User</th>
-                        <th>Time</th>
-                        <th>Payload</th>
-                    </tr>
-                </thead>
-                <tbody id="cmd-log"></tbody>
-            </table>
-        </div>
-        <div class="card">
-            <h2>Audit Log</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Event</th>
-                        <th>Patient</th>
-                        <th>Observation</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody id="audit-log"></tbody>
-            </table>
-        </div>
+
+<div class="topbar">
+  <div class="topbar-brand">🏥 Patient Tracker</div>
+  <nav class="topbar-nav">
+    <a href="index.html">Patients</a>
+    <a href="catalogue.html">Catalogue</a>
+    <a href="logs.html" class="active">Logs</a>
+  </nav>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="user-dot"></div>
+      <select class="user-select" id="user-select" onchange="setUser(this.value)">
+        <option value="staff">staff</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-title">Logs</div>
+  <div class="page-sub">Command history and audit trail. You can undo your own commands.</div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="loadAll()">🔄 Refresh</button>
+  </div>
+
+  <div class="notice" id="undo-notice"></div>
+
+  <div class="grid-2">
+    <!-- Command Log -->
+    <div class="card">
+      <div class="card-title">📝 Command Log
+        <span style="font-size:0.78rem;font-weight:400;color:var(--muted);margin-left:8px">
+          You can undo commands you executed
+        </span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Type</th><th>User</th><th>Time</th><th>Payload</th><th>Status</th><th>Undo</th>
+            </tr>
+          </thead>
+          <tbody id="cmd-log">
+            <tr class="empty-row"><td colspan="7">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <script>
-        const API = 'https://patient-observation-tracker-backend-cad5.onrender.com';
-        async function loadAll() {
-            const cmds = await fetch(`${API}/api/command-log`).then(r => r.json());
-            document.getElementById('cmd-log').innerHTML = cmds.map(c =>
-                `<tr><td>${c.id}</td><td>${c.commandType}</td><td>${c.user}</td>
-         <td>${c.executedAt?.replace('T', ' ').substring(0, 16) || ''}</td>
-         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${c.payload || ''}</td></tr>`
-            ).join('');
+    <!-- Audit Log -->
+    <div class="card">
+      <div class="card-title">🔍 Audit Log</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Event</th><th>Patient</th><th>Observation</th><th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="audit-log">
+            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
-            const audits = await fetch(`${API}/api/audit-log`).then(r => r.json());
-            document.getElementById('audit-log').innerHTML = audits.map(a =>
-                `<tr><td>${a.id}</td><td>${a.event}</td><td>#${a.patientId}</td>
-         <td>#${a.observationId}</td>
-         <td>${a.timestamp?.replace('T', ' ').substring(0, 16) || ''}</td></tr>`
-            ).join('');
+<script>
+  const API = 'https://patient-observation-tracker-backend-hg23.onrender.com';
+
+  function getCurrentUser() { return sessionStorage.getItem('currentUser') || 'staff'; }
+  function setUser(u) { if (u) sessionStorage.setItem('currentUser', u); loadAll(); }
+
+  async function loadUsers() {
+    try {
+      const users = await fetch(`${API}/api/users`).then(r => r.json());
+      const sel = document.getElementById('user-select');
+      const current = getCurrentUser();
+      if (users.length > 0) {
+        sel.innerHTML = users.map(u =>
+          `<option value="${u.username}" ${u.username === current ? 'selected' : ''}>${u.username} (${u.role})</option>`
+        ).join('');
+      }
+    } catch(e) {}
+  }
+
+  function canUndo(cmd) {
+    // Only the original user can undo; CREATE_PATIENT is unsupported; already-undone cannot be undone again
+    return !cmd.undone
+      && cmd.user === getCurrentUser()
+      && cmd.commandType !== 'CREATE_PATIENT';
+  }
+
+  async function undoCommand(id) {
+    if (!confirm('Undo this command? This action cannot be reversed.')) return;
+    const res = await fetch(`${API}/api/command-log/${id}/undo`, {
+      method: 'POST',
+      headers: { 'X-Username': getCurrentUser() }
+    });
+    const notice = document.getElementById('undo-notice');
+    notice.style.display = 'block';
+    if (res.ok) {
+      notice.textContent = `✅ Command #${id} successfully undone.`;
+      notice.style.background = '#e8f5e9';
+      notice.style.borderColor = '#4a7c59';
+      notice.style.color = '#1b5e20';
+    } else {
+      const msg = await res.text();
+      notice.textContent = `❌ Undo failed: ${msg}`;
+      notice.style.background = '#fce4ec';
+      notice.style.borderColor = '#c62828';
+      notice.style.color = '#c62828';
+    }
+    setTimeout(() => { notice.style.display = 'none'; }, 4000);
+    loadAll();
+  }
+
+  async function loadAll() {
+    const currentUser = getCurrentUser();
+
+    // Command log
+    const cmds = await fetch(`${API}/api/command-log`).then(r => r.json());
+    const cmdTbody = document.getElementById('cmd-log');
+    if (cmds.length === 0) {
+      cmdTbody.innerHTML = '<tr class="empty-row"><td colspan="7">No commands yet.</td></tr>';
+    } else {
+      cmdTbody.innerHTML = [...cmds].reverse().map(c => {
+        const statusBadge = c.undone
+          ? `<span class="badge badge-undone">UNDONE</span>`
+          : `<span class="badge badge-done">DONE</span>`;
+
+        let undoBtn = '';
+        if (c.undone) {
+          undoBtn = `<span style="color:var(--muted);font-size:0.76rem">—</span>`;
+        } else if (c.commandType === 'CREATE_PATIENT') {
+          undoBtn = `<span class="btn btn-sm btn-disabled" title="Undo not supported for patient creation">N/A</span>`;
+        } else if (c.user === currentUser) {
+          undoBtn = `<button class="btn btn-danger btn-sm" onclick="undoCommand(${c.id})">↩ Undo</button>`;
+        } else {
+          undoBtn = `<span style="color:var(--muted);font-size:0.76rem" title="Only ${c.user} can undo this">🔒</span>`;
         }
 
-        loadAll();
-    </script>
-</body>
+        const typeColor = c.commandType?.includes('REJECT') ? 'badge-rejected' : 'badge-created';
 
+        return `<tr class="${c.undone ? 'undone-row' : ''}">
+          <td>${c.id}</td>
+          <td><span class="badge ${typeColor}">${c.commandType}</span></td>
+          <td>${c.user || '—'}</td>
+          <td>${c.executedAt?.replace('T', ' ').substring(0, 16) || '—'}</td>
+          <td class="payload-cell" title="${(c.payload || '').replace(/"/g, '&quot;')}">${c.payload || '—'}</td>
+          <td>${statusBadge}</td>
+          <td>${undoBtn}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Audit log
+    const audits = await fetch(`${API}/api/audit-log`).then(r => r.json());
+    const auditTbody = document.getElementById('audit-log');
+    if (audits.length === 0) {
+      auditTbody.innerHTML = '<tr class="empty-row"><td colspan="5">No audit entries yet.</td></tr>';
+    } else {
+      auditTbody.innerHTML = [...audits].reverse().map(a =>
+        `<tr>
+          <td>${a.id}</td>
+          <td>${a.event}</td>
+          <td>#${a.patientId}</td>
+          <td>#${a.observationId}</td>
+          <td>${a.timestamp?.replace('T', ' ').substring(0, 16) || '—'}</td>
+        </tr>`
+      ).join('');
+    }
+  }
+
+  loadUsers();
+  loadAll();
+</script>
+</body>
 </html>

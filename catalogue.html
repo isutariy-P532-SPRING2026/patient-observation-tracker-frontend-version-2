@@ -1,298 +1,522 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Catalogue</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 960px;
-            margin: 40px auto;
-            padding: 0 20px;
-            background: #f5f7fa;
-        }
+  <meta charset="UTF-8">
+  <title>Catalogue — Patient Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f1ec; --surface: #ffffff; --primary: #1a3a2a; --accent: #4a7c59;
+      --accent2: #c8a96e; --text: #1c1c1c; --muted: #7a7a7a; --border: #e0dbd2;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
 
-        nav a {
-            margin-right: 16px;
-            text-decoration: none;
-            color: #3498db;
-            font-weight: bold;
-        }
+    .topbar {
+      background: var(--primary); color: white; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 32px; height: 56px; position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-brand { font-family: 'DM Serif Display', serif; font-size: 1.2rem; }
+    .topbar-nav { display: flex; gap: 4px; }
+    .topbar-nav a { color: rgba(255,255,255,0.75); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .topbar-nav a:hover, .topbar-nav a.active { background: rgba(255,255,255,0.15); color: white; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+    .user-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 12px 4px 8px; font-size: 0.82rem; }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #6ee7a0; }
+    .user-select { background: transparent; border: none; color: white; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; outline: none; }
+    .user-select option { color: #1c1c1c; background: white; }
 
-        h1,
-        h2,
-        h3 {
-            color: #2c3e50;
-        }
+    .page { max-width: 1100px; margin: 0 auto; padding: 36px 24px; }
+    .page-title { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--primary); margin-bottom: 4px; }
+    .page-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .full { grid-column: 1 / -1; }
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-        }
+    .card { background: var(--surface); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px; }
+    .card-title { font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-bottom: 16px; }
 
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            margin: 4px 0 10px;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .fg-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    label { font-size: 0.76rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    input, select, textarea {
+      padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--text);
+      background: var(--bg); transition: border-color 0.15s; outline: none; width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--accent); background: white; }
+    select[multiple] { height: 80px; }
 
-        label {
-            font-weight: bold;
-            color: #555;
-            font-size: 0.9em;
-        }
+    .btn {
+      padding: 9px 20px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-sm { padding: 5px 12px; font-size: 0.78rem; }
 
-        .btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    ul { list-style: none; padding: 0; }
+    li { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 0.87rem; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    li:last-child { border-bottom: none; }
 
-        .btn:hover {
-            opacity: 0.85;
-        }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .tag-q { background: #e8f5e9; color: #2e7d32; }
+    .tag-qual { background: #fff8e1; color: #7d6608; }
+    .tag-blue { background: #e3f2fd; color: #1565c0; }
+    .tag-orange { background: #fff3e0; color: #e65100; }
+    .tag-active { background: #e8f5e9; color: #2e7d32; }
+    .tag-inactive { background: #fce4ec; color: #c62828; }
+    .tag-weighted { background: #ede7f6; color: #4527a0; }
 
-        ul {
-            list-style: none;
-            padding: 0;
-        }
+    .rule-item { background: #fafafa; border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .rule-header { font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+    .rule-meta { font-size: 0.82rem; color: var(--muted); }
+    .weights-list { margin-top: 6px; }
+    .weight-entry { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 0.82rem; }
+    .weight-entry input[type=number] { width: 70px; padding: 4px 8px; }
 
-        li {
-            padding: 8px;
-            border-bottom: 1px solid #ecf0f1;
-            font-size: 0.9em;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #eaf4fb;
-            color: #1a5276;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 0.8em;
-            margin: 2px;
-        }
-
-        .tag-q {
-            background: #e8f8f5;
-            color: #1e8449;
-        }
-
-        .tag-qual {
-            background: #fef9e7;
-            color: #7d6608;
-        }
-    </style>
+    #weight-args-container { margin-top: 10px; }
+    #threshold-row { margin-top: 10px; display: none; }
+  </style>
 </head>
-
 <body>
-    <nav>
-        <a href="index.html">🏥 Patients</a>
-        <a href="catalogue.html">📚 Catalogue</a>
-        <a href="logs.html">📋 Logs</a>
-    </nav>
-    <h1>Catalogue</h1>
 
-    <div class="grid">
-        <!-- Phenomenon Types -->
-        <div>
-            <div class="card">
-                <h3>Add Phenomenon Type</h3>
-                <label>Name</label>
-                <input id="pt-name" placeholder="e.g. Body Temperature">
-                <label>Kind</label>
-                <select id="pt-kind">
-                    <option value="QUANTITATIVE">QUANTITATIVE</option>
-                    <option value="QUALITATIVE">QUALITATIVE</option>
-                </select>
-                <label>Allowed Units (comma-separated, for QUANTITATIVE)</label>
-                <input id="pt-units" placeholder="e.g. °C,°F,K">
-                <button class="btn" onclick="createPhenomenonType()">Add Type</button>
-            </div>
-            <div class="card">
-                <h3>Phenomenon Types</h3>
-                <ul id="pt-list"></ul>
-            </div>
-            <div class="card">
-                <h3>Add Phenomenon (for QUALITATIVE type)</h3>
-                <label>Select Qualitative Type</label>
-                <select id="ph-type"></select>
-                <label>Phenomenon Name</label>
-                <input id="ph-name" placeholder="e.g. Blood Group A">
-                <button class="btn" onclick="createPhenomenon()">Add Phenomenon</button>
-            </div>
-        </div>
+<div class="topbar">
+  <div class="topbar-brand">🏥 Patient Tracker</div>
+  <nav class="topbar-nav">
+    <a href="index.html">Patients</a>
+    <a href="catalogue.html" class="active">Catalogue</a>
+    <a href="logs.html">Logs</a>
+  </nav>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="user-dot"></div>
+      <select class="user-select" id="user-select" onchange="setUser(this.value)">
+        <option value="staff">staff</option>
+      </select>
+    </div>
+  </div>
+</div>
 
-        <!-- Protocols -->
-        <div>
-            <div class="card">
-                <h3>Add Protocol</h3>
-                <label>Name</label>
-                <input id="proto-name" placeholder="e.g. Oral Thermometry">
-                <label>Description</label>
-                <input id="proto-desc" placeholder="Brief description...">
-                <label>Accuracy Rating</label>
-                <select id="proto-acc">
-                    <option value="HIGH">HIGH</option>
-                    <option value="MEDIUM">MEDIUM</option>
-                    <option value="LOW">LOW</option>
-                </select>
-                <button class="btn" onclick="createProtocol()">Add Protocol</button>
-            </div>
-            <div class="card">
-                <h3>Protocols</h3>
-                <ul id="proto-list"></ul>
-            </div>
-        </div>
+<div class="page">
+  <div class="page-title">Catalogue</div>
+  <div class="page-sub">Manage phenomenon types, phenomena, protocols and diagnostic rules</div>
 
-        <!-- Associative Function Rules -->
-        <div class="card" style="grid-column: span 2;">
-            <h3>⚡ Diagnostic Rules (Associative Functions)</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
-                <div>
-                    <label>Rule Name</label>
-                    <input id="rule-name" placeholder="e.g. Metabolic Risk">
-                </div>
-                <div>
-                    <label>Argument Types (triggers — hold Ctrl for multi)</label>
-                    <select id="rule-args" multiple style="height:80px;"></select>
-                </div>
-                <div>
-                    <label>Product Concept (inferred type)</label>
-                    <select id="rule-product"></select>
-                </div>
-                <div>
-                    <button class="btn" onclick="createRule()">Add Rule</button>
-                </div>
-            </div>
-            <ul id="rule-list" style="margin-top:16px;"></ul>
+  <div class="grid-2">
+    <!-- LEFT: Phenomenon Types -->
+    <div>
+      <div class="card">
+        <div class="card-title">📐 Add Phenomenon Type</div>
+        <div class="fg">
+          <label>Name</label>
+          <input id="pt-name" placeholder="e.g. Body Temperature">
         </div>
+        <div class="fg-row">
+          <div class="fg">
+            <label>Kind</label>
+            <select id="pt-kind" onchange="toggleUnits()">
+              <option value="QUANTITATIVE">QUANTITATIVE</option>
+              <option value="QUALITATIVE">QUALITATIVE</option>
+            </select>
+          </div>
+        </div>
+        <div id="quant-fields">
+          <div class="fg-row">
+            <div class="fg">
+              <label>Allowed Units (comma-separated)</label>
+              <input id="pt-units" placeholder="e.g. °C,°F,K">
+            </div>
+          </div>
+          <div class="fg-row">
+            <div class="fg">
+              <label>Normal Min (optional)</label>
+              <input id="pt-min" type="number" step="0.01" placeholder="e.g. 36.1">
+            </div>
+            <div class="fg">
+              <label>Normal Max (optional)</label>
+              <input id="pt-max" type="number" step="0.01" placeholder="e.g. 37.2">
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="createPhenomenonType()">Add Type</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Phenomenon Types</div>
+        <ul id="pt-list"><li style="color:var(--muted);font-style:italic">Loading...</li></ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏷️ Add Phenomenon (Qualitative)</div>
+        <div class="fg">
+          <label>Select Qualitative Type</label>
+          <select id="ph-type"></select>
+        </div>
+        <div class="fg">
+          <label>Phenomenon Name</label>
+          <input id="ph-name" placeholder="e.g. Blood Group A">
+        </div>
+        <div class="fg">
+          <label>Parent Concept (optional — for hierarchy)</label>
+          <select id="ph-parent">
+            <option value="">None (root concept)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="createPhenomenon()">Add Phenomenon</button>
+      </div>
     </div>
 
-    <script>
-        const API = 'https://patient-observation-tracker-backend-cad5.onrender.com';
-        async function loadAll() {
-            const types = await fetch(`${API}/api/phenomenon-types`).then(r => r.json());
-            const ptList = document.getElementById('pt-list');
-            ptList.innerHTML = types.map(t => {
-                const units = t.kind === 'QUANTITATIVE'
-                    ? [...(t.allowedUnits || [])].map(u => `<span class="tag tag-q">${u}</span>`).join(' ')
-                    : [...(t.phenomena || [])].map(p => `<span class="tag tag-qual">${p.name}</span>`).join(' ');
-                return `<li><strong>${t.name}</strong> <span class="tag">${t.kind}</span> ${units}</li>`;
-            }).join('');
+    <!-- RIGHT: Protocols -->
+    <div>
+      <div class="card">
+        <div class="card-title">📄 Add Protocol</div>
+        <div class="fg">
+          <label>Name</label>
+          <input id="proto-name" placeholder="e.g. Oral Thermometry">
+        </div>
+        <div class="fg">
+          <label>Description</label>
+          <input id="proto-desc" placeholder="Brief description...">
+        </div>
+        <div class="fg">
+          <label>Accuracy Rating</label>
+          <select id="proto-acc">
+            <option value="HIGH">HIGH</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="LOW">LOW</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="createProtocol()">Add Protocol</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📄 Protocols</div>
+        <ul id="proto-list"><li style="color:var(--muted);font-style:italic">Loading...</li></ul>
+      </div>
+    </div>
+  </div>
 
-            const qualTypes = types.filter(t => t.kind === 'QUALITATIVE');
-            document.getElementById('ph-type').innerHTML =
-                qualTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  <!-- Rules — full width -->
+  <div class="card full">
+    <div class="card-title">⚡ Diagnostic Rules (Associative Functions)</div>
 
-            const protocols = await fetch(`${API}/api/protocols`).then(r => r.json());
-            document.getElementById('proto-list').innerHTML = protocols.map(p =>
-                `<li><strong>${p.name}</strong> <span class="tag">${p.accuracyRating}</span><br><small>${p.description || ''}</small></li>`
-            ).join('');
-            await loadRules(types);
-        }
+    <div class="fg-row3">
+      <div class="fg">
+        <label>Rule Name</label>
+        <input id="rule-name" placeholder="e.g. Metabolic Risk">
+      </div>
+      <div class="fg">
+        <label>Strategy</label>
+        <select id="rule-strategy" onchange="onStrategyChange()">
+          <option value="CONJUNCTIVE">CONJUNCTIVE (AND logic)</option>
+          <option value="WEIGHTED">WEIGHTED (score ≥ threshold)</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Product Concept (inferred type)</label>
+        <select id="rule-product">
+          <option value="">-- Select inferred type --</option>
+        </select>
+      </div>
+    </div>
 
-        async function createPhenomenonType() {
-            const name = document.getElementById('pt-name').value.trim();
-            const kind = document.getElementById('pt-kind').value;
-            const unitsRaw = document.getElementById('pt-units').value;
-            const allowedUnits = kind === 'QUANTITATIVE'
-                ? unitsRaw.split(',').map(u => u.trim()).filter(Boolean)
-                : [];
-            await fetch(`${API}/api/phenomenon-types`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, kind, allowedUnits })
-            });
-            document.getElementById('pt-name').value = '';
-            document.getElementById('pt-units').value = '';
-            loadAll();
-        }
+    <div class="fg">
+      <label>Argument Types (triggers — hold Ctrl for multi)</label>
+      <select id="rule-args" multiple onchange="onArgsChange()"></select>
+    </div>
 
-        async function createPhenomenon() {
-            const typeId = document.getElementById('ph-type').value;
-            const name = document.getElementById('ph-name').value.trim();
-            await fetch(`${API}/api/phenomenon-types/${typeId}/phenomena`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            document.getElementById('ph-name').value = '';
-            loadAll();
-        }
+    <!-- Weight inputs — shown only for WEIGHTED strategy -->
+    <div id="weight-args-container"></div>
 
-        async function loadRules(types) {
-            const rules = await fetch(`${API}/api/rules`).then(r => r.json());
+    <!-- Threshold — shown only for WEIGHTED strategy -->
+    <div class="fg-row" id="threshold-row">
+      <div class="fg">
+        <label>Threshold (score must be ≥ this to fire)</label>
+        <input id="rule-threshold" type="number" step="0.01" value="1.0" placeholder="e.g. 1.5">
+      </div>
+    </div>
 
-            // Populate rule type selects
-            const allOpts = types.map(t => `<option value="${t.id}">${t.name} (${t.kind})</option>`).join('');
-            document.getElementById('rule-args').innerHTML = allOpts;
-            document.getElementById('rule-product').innerHTML =
-                '<option value="">-- Select inferred type --</option>' + allOpts;
+    <br>
+    <button class="btn btn-primary" onclick="createRule()">Add Rule</button>
 
-            document.getElementById('rule-list').innerHTML = rules.length === 0
-                ? '<li style="color:#999">No rules yet. Add one above.</li>'
-                : rules.map(r => `
-                    <li>
-                        <strong>${r.name}</strong> — 
-                        IF <em>${r.argumentConcepts.map(a => a.name).join(' AND ')}</em> 
-                        → INFER <strong>${r.productConcept?.name || '?'}</strong>
-                        <span class="tag" style="background:${r.active ? '#d5f5e3' : '#fadbd8'};color:${r.active ? '#1e8449' : '#922b21'}">${r.active ? 'ACTIVE' : 'INACTIVE'}</span>
-                    </li>`).join('');
-        }
+    <div id="rule-list" style="margin-top: 20px;"></div>
+  </div>
+</div>
 
-        async function createRule() {
-            const name = document.getElementById('rule-name').value.trim();
-            const argsSelect = document.getElementById('rule-args');
-            const argIds = [...argsSelect.selectedOptions].map(o => ({ id: parseInt(o.value) }));
-            const productId = parseInt(document.getElementById('rule-product').value);
+<script>
+  const API = 'https://patient-observation-tracker-backend-hg23.onrender.com';
+  let allTypes = [];
+  let allPhenomena = [];
 
-            if (!name || argIds.length === 0 || !productId) {
-                alert('Fill in rule name, select at least one argument type, and select a product type.');
-                return;
-            }
+  function getCurrentUser() { return sessionStorage.getItem('currentUser') || 'staff'; }
+  function setUser(u) { if (u) sessionStorage.setItem('currentUser', u); }
 
-            await fetch(`${API}/api/rules`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, argumentConcepts: argIds, productConcept: { id: productId }, active: true })
-            });
-            document.getElementById('rule-name').value = '';
-            loadAll();
-        }
+  async function loadUsers() {
+    try {
+      const users = await fetch(`${API}/api/users`).then(r => r.json());
+      const sel = document.getElementById('user-select');
+      const current = getCurrentUser();
+      if (users.length > 0) {
+        sel.innerHTML = users.map(u =>
+          `<option value="${u.username}" ${u.username === current ? 'selected' : ''}>${u.username} (${u.role})</option>`
+        ).join('');
+      }
+    } catch(e) {}
+  }
 
-        async function createProtocol() {
-            const body = {
-                name: document.getElementById('proto-name').value,
-                description: document.getElementById('proto-desc').value,
-                accuracyRating: document.getElementById('proto-acc').value
-            };
-            await fetch(`${API}/api/protocols`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            document.getElementById('proto-name').value = '';
-            document.getElementById('proto-desc').value = '';
-            loadAll();
-        }
+  function toggleUnits() {
+    const kind = document.getElementById('pt-kind').value;
+    document.getElementById('quant-fields').style.display = kind === 'QUANTITATIVE' ? '' : 'none';
+  }
 
-        loadAll();
-    </script>
+  function onStrategyChange() {
+    const strategy = document.getElementById('rule-strategy').value;
+    const threshRow = document.getElementById('threshold-row');
+    threshRow.style.display = strategy === 'WEIGHTED' ? 'grid' : 'none';
+    onArgsChange();
+  }
+
+  function onArgsChange() {
+    const strategy = document.getElementById('rule-strategy').value;
+    const container = document.getElementById('weight-args-container');
+    if (strategy !== 'WEIGHTED') { container.innerHTML = ''; return; }
+
+    const selected = [...document.getElementById('rule-args').selectedOptions];
+    if (selected.length === 0) { container.innerHTML = ''; return; }
+
+    container.innerHTML = `
+      <div style="margin-top:10px">
+        <label style="font-size:0.76rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">
+          Argument Weights
+        </label>
+        <div style="margin-top:6px">
+          ${selected.map(opt => `
+            <div class="weight-entry">
+              <span style="flex:1;font-size:0.85rem">${opt.text}</span>
+              <input type="number" step="0.1" min="0" value="1.0" id="weight-${opt.value}"
+                style="width:80px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem">
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
+  async function loadAll() {
+    const errStyle = 'color:#c0392b;font-style:italic';
+
+    // 1. Phenomenon types
+    let typesOk = false;
+    try {
+      const res = await fetch(`${API}/api/phenomenon-types`);
+      if (!res.ok) throw new Error(res.status);
+      allTypes = await res.json();
+      typesOk = true;
+    } catch(e) {
+      document.getElementById('pt-list').innerHTML =
+        `<li style="${errStyle}">Could not load types — is the backend running? (${e.message})</li>`;
+    }
+
+    const qualTypes = allTypes.filter(t => t.kind === 'QUALITATIVE');
+
+    // 2. Fetch phenomena for each qualitative type (errors per-type, don't abort all)
+    allPhenomena = [];
+    const phenomenaByTypeId = {};
+    for (const qt of qualTypes) {
+      try {
+        const phs = await fetch(`${API}/api/phenomenon-types/${qt.id}/phenomena`).then(r => r.json());
+        phenomenaByTypeId[qt.id] = phs;
+        allPhenomena.push(...phs.map(p => ({ ...p, typeName: qt.name })));
+      } catch(e) {
+        phenomenaByTypeId[qt.id] = [];
+      }
+    }
+
+    // 3. Render type list (now phenomena are available)
+    if (typesOk) {
+      const ptList = document.getElementById('pt-list');
+      if (allTypes.length === 0) {
+        ptList.innerHTML = '<li style="color:var(--muted);font-style:italic">No types defined yet.</li>';
+      } else {
+        ptList.innerHTML = allTypes.map(t => {
+          let extra = '';
+          if (t.kind === 'QUANTITATIVE') {
+            const units = [...(t.allowedUnits || [])].map(u => `<span class="tag tag-q">${u}</span>`).join(' ');
+            const range = (t.normalMin != null && t.normalMax != null)
+              ? `<span class="tag tag-blue">range: ${t.normalMin}–${t.normalMax}</span>` : '';
+            extra = (units + ' ' + range).trim();
+          } else {
+            const phs = phenomenaByTypeId[t.id] || [];
+            extra = phs.length
+              ? phs.map(p => `<span class="tag tag-qual">${p.name}</span>`).join(' ')
+              : '<em style="color:var(--muted);font-size:0.8rem">no phenomena yet</em>';
+          }
+          return `<li><strong>${t.name}</strong> <span class="tag ${t.kind === 'QUANTITATIVE' ? 'tag-q' : 'tag-qual'}">${t.kind}</span> ${extra}</li>`;
+        }).join('');
+      }
+
+      // Qual types dropdown for adding phenomena
+      document.getElementById('ph-type').innerHTML = qualTypes.length
+        ? qualTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')
+        : '<option value="">No qualitative types yet</option>';
+
+      // Parent concept dropdown
+      document.getElementById('ph-parent').innerHTML =
+        '<option value="">None (root concept)</option>' +
+        allPhenomena.map(p => `<option value="${p.id}">${p.name} (${p.phenomenonType?.name || ''})</option>`).join('');
+    }
+
+    // 4. Protocols
+    try {
+      const res = await fetch(`${API}/api/protocols`);
+      if (!res.ok) throw new Error(res.status);
+      const protocols = await res.json();
+      document.getElementById('proto-list').innerHTML = protocols.length
+        ? protocols.map(p =>
+            `<li><strong>${p.name}</strong> <span class="tag tag-blue">${p.accuracyRating}</span><br>
+             <small style="color:var(--muted)">${p.description || ''}</small></li>`
+          ).join('')
+        : '<li style="color:var(--muted);font-style:italic">No protocols defined yet.</li>';
+    } catch(e) {
+      document.getElementById('proto-list').innerHTML =
+        `<li style="${errStyle}">Could not load protocols (${e.message})</li>`;
+    }
+
+    // 5. Rules + populate rule form dropdowns
+    await loadRules();
+  }
+
+  async function loadRules() {
+    const rules = await fetch(`${API}/api/rules`).then(r => r.json());
+
+    const allOpts = allTypes.map(t => `<option value="${t.id}">${t.name} (${t.kind})</option>`).join('');
+    document.getElementById('rule-args').innerHTML = allOpts;
+    document.getElementById('rule-product').innerHTML =
+      '<option value="">-- Select inferred type --</option>' + allOpts;
+
+    const container = document.getElementById('rule-list');
+    if (rules.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted);font-style:italic">No rules yet.</p>';
+      return;
+    }
+    container.innerHTML = rules.map(r => {
+      const isWeighted = r.strategyHint === 'WEIGHTED';
+      const argStr = isWeighted
+        ? (r.argumentWeights || []).map(aw =>
+            `${aw.phenomenonType?.name || '?'} <span style="font-size:0.78rem;color:var(--muted)">(w=${aw.weight})</span>`
+          ).join(', ')
+        : (r.argumentConcepts || []).map(a => a.name).join(' AND ');
+
+      const threshStr = isWeighted && r.threshold != null
+        ? `<span class="tag tag-blue" style="margin-left:4px">threshold: ${r.threshold}</span>` : '';
+
+      return `<div class="rule-item">
+        <div class="rule-header">
+          ${r.name}
+          <span class="tag ${r.active ? 'tag-active' : 'tag-inactive'}" style="margin-left:6px">${r.active ? 'ACTIVE' : 'INACTIVE'}</span>
+          <span class="tag ${isWeighted ? 'tag-weighted' : 'tag-blue'}" style="margin-left:4px">${r.strategyHint || 'CONJUNCTIVE'}</span>
+          ${threshStr}
+        </div>
+        <div class="rule-meta">
+          IF <em>${argStr}</em> → INFER <strong>${r.productConcept?.name || '?'}</strong>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function createPhenomenonType() {
+    const name = document.getElementById('pt-name').value.trim();
+    const kind = document.getElementById('pt-kind').value;
+    if (!name) { alert('Name required.'); return; }
+    const body = { name, kind };
+    if (kind === 'QUANTITATIVE') {
+      body.allowedUnits = document.getElementById('pt-units').value.split(',').map(u => u.trim()).filter(Boolean);
+      const min = document.getElementById('pt-min').value;
+      const max = document.getElementById('pt-max').value;
+      if (min) body.normalMin = parseFloat(min);
+      if (max) body.normalMax = parseFloat(max);
+    }
+    await fetch(`${API}/api/phenomenon-types`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Username': getCurrentUser() },
+      body: JSON.stringify(body)
+    });
+    document.getElementById('pt-name').value = '';
+    document.getElementById('pt-units').value = '';
+    document.getElementById('pt-min').value = '';
+    document.getElementById('pt-max').value = '';
+    loadAll();
+  }
+
+  async function createPhenomenon() {
+    const typeId = document.getElementById('ph-type').value;
+    const name = document.getElementById('ph-name').value.trim();
+    const parentId = document.getElementById('ph-parent').value;
+    if (!name) { alert('Name required.'); return; }
+    const body = { name };
+    if (parentId) body.parentConcept = { id: parseInt(parentId) };
+    await fetch(`${API}/api/phenomenon-types/${typeId}/phenomena`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Username': getCurrentUser() },
+      body: JSON.stringify(body)
+    });
+    document.getElementById('ph-name').value = '';
+    loadAll();
+  }
+
+  async function createProtocol() {
+    const body = {
+      name: document.getElementById('proto-name').value.trim(),
+      description: document.getElementById('proto-desc').value,
+      accuracyRating: document.getElementById('proto-acc').value
+    };
+    if (!body.name) { alert('Name required.'); return; }
+    await fetch(`${API}/api/protocols`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Username': getCurrentUser() },
+      body: JSON.stringify(body)
+    });
+    document.getElementById('proto-name').value = '';
+    document.getElementById('proto-desc').value = '';
+    loadAll();
+  }
+
+  async function createRule() {
+    const name = document.getElementById('rule-name').value.trim();
+    const strategy = document.getElementById('rule-strategy').value;
+    const argsSelect = document.getElementById('rule-args');
+    const selected = [...argsSelect.selectedOptions];
+    const productId = document.getElementById('rule-product').value;
+
+    if (!name || selected.length === 0 || !productId) {
+      alert('Fill in rule name, select at least one argument type, and select a product type.');
+      return;
+    }
+
+    const body = {
+      name,
+      strategyHint: strategy,
+      argumentConcepts: selected.map(o => ({ id: parseInt(o.value) })),
+      productConcept: { id: parseInt(productId) },
+      active: true
+    };
+
+    if (strategy === 'WEIGHTED') {
+      body.threshold = parseFloat(document.getElementById('rule-threshold').value) || 1.0;
+      body.argumentWeights = selected.map(o => ({
+        phenomenonType: { id: parseInt(o.value) },
+        weight: parseFloat(document.getElementById(`weight-${o.value}`)?.value) || 1.0
+      }));
+    }
+
+    await fetch(`${API}/api/rules`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Username': getCurrentUser() },
+      body: JSON.stringify(body)
+    });
+    document.getElementById('rule-name').value = '';
+    loadAll();
+  }
+
+  loadUsers();
+  toggleUnits();
+  loadAll();
+</script>
 </body>
-
 </html>
